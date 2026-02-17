@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="pw26" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Service" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="BIM-iS-zoU">
+                                <rect key="frame" x="16" y="84" width="343" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no"/>
+                                <connections>
+                                    <action selector="serviceInputEdit:" destination="BYZ-38-t0r" eventType="editingChanged" id="HNR-jP-TNS"/>
+                                </connections>
+                            </textField>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Password" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dxf-Oc-Vfd">
+                                <rect key="frame" x="16" y="134" width="343" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" secureTextEntry="YES"/>
+                                <connections>
+                                    <action selector="passwordInputEdit:" destination="BYZ-38-t0r" eventType="editingChanged" id="vJr-jw-qca"/>
+                                </connections>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wdF-nM-P05">
+                                <rect key="frame" x="161" y="228" width="52" height="30"/>
+                                <color key="backgroundColor" red="0.65865391739431423" green="0.6257086712958152" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="  Copy  ">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="copyNormal:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Wl7-3J-lCq"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MqS-xc-6vG">
+                                <rect key="frame" x="130" y="629" width="116" height="30"/>
+                                <color key="backgroundColor" red="0.65865391739431423" green="0.6257086712958152" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="  www.pwapp.io  ">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="websiteLink:" destination="BYZ-38-t0r" eventType="touchUpInside" id="N9A-J1-LFW"/>
+                                </connections>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="appIcon-60" translatesAutoresizingMaskIntoConstraints="NO" id="nmg-G9-AjK">
+                                <rect key="frame" x="157.5" y="20" width="60" height="60"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uOG-Od-Nse">
+                                <rect key="frame" x="102" y="266" width="171" height="30"/>
+                                <color key="backgroundColor" red="0.66013365983963013" green="0.62806427478790283" blue="0.99919801950454712" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="  Copy 15 Character PW  ">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="copy15CharYes:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uIA-TK-k8M"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="3d988305711e95D7BcDcDaA75886E05d02B6A52a" textAlignment="center" lineBreakMode="characterWrap" numberOfLines="4" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DA8-4A-RRN">
+                                <rect key="frame" x="38" y="179" width="300" height="41"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ckK-FW-qIQ">
+                                <rect key="frame" x="56" y="304" width="264" height="30"/>
+                                <color key="backgroundColor" red="0.63553112745285034" green="0.49893844127655029" blue="0.86921709775924683" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="  Copy PW with Special * Character  ">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="copySpecialChar:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bQx-8t-Ims"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="0.53725490200000003" green="0.27058823529999998" blue="0.69411764710000001" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="trailingMargin" secondItem="BIM-iS-zoU" secondAttribute="trailing" id="2FW-wG-3Ix"/>
+                            <constraint firstItem="nmg-G9-AjK" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="5Oy-ip-8po"/>
+                            <constraint firstItem="uOG-Od-Nse" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="5sS-id-IGA"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="dxf-Oc-Vfd" secondAttribute="trailing" id="7id-Fa-LaM"/>
+                            <constraint firstItem="nmg-G9-AjK" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="9kC-rA-Hsi"/>
+                            <constraint firstItem="MqS-xc-6vG" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Ey7-1b-yvv"/>
+                            <constraint firstItem="uOG-Od-Nse" firstAttribute="top" secondItem="wdF-nM-P05" secondAttribute="bottom" constant="8" id="GbI-t5-o2W"/>
+                            <constraint firstItem="dxf-Oc-Vfd" firstAttribute="top" secondItem="BIM-iS-zoU" secondAttribute="bottom" constant="20" id="Jb6-KZ-Tah" userLabel="Password Input.top = Service Input.bottom + 25"/>
+                            <constraint firstItem="BIM-iS-zoU" firstAttribute="top" secondItem="nmg-G9-AjK" secondAttribute="bottom" constant="4" id="PXq-7E-7UK" userLabel="Service Input.top = appIcon-60.bottom + 25"/>
+                            <constraint firstItem="ckK-FW-qIQ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="RWE-KD-MFZ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="DA8-4A-RRN" secondAttribute="trailing" constant="21" id="TE2-xO-wwo"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="MqS-xc-6vG" secondAttribute="bottom" constant="8" id="ctt-yu-fPd"/>
+                            <constraint firstItem="wdF-nM-P05" firstAttribute="top" secondItem="DA8-4A-RRN" secondAttribute="bottom" constant="8" id="dWe-cg-Vcc"/>
+                            <constraint firstItem="BIM-iS-zoU" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="f8k-Sv-24f"/>
+                            <constraint firstItem="DA8-4A-RRN" firstAttribute="top" secondItem="dxf-Oc-Vfd" secondAttribute="bottom" constant="15" id="gqa-3I-2sO" userLabel="Pw Output.top = Password Input.bottom + 25"/>
+                            <constraint firstItem="ckK-FW-qIQ" firstAttribute="top" secondItem="uOG-Od-Nse" secondAttribute="bottom" constant="8" id="mog-Oh-1ei"/>
+                            <constraint firstItem="DA8-4A-RRN" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="qrE-gV-S59"/>
+                            <constraint firstItem="wdF-nM-P05" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="uDC-aD-FBf"/>
+                            <constraint firstItem="dxf-Oc-Vfd" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="vw6-13-VGE"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="buttonCopy15CharYes" destination="uOG-Od-Nse" id="DuF-yK-3z2"/>
+                        <outlet property="buttonCopyNormal" destination="wdF-nM-P05" id="IDh-zm-XoO"/>
+                        <outlet property="buttonCopySpecialChar" destination="ckK-FW-qIQ" id="Cgw-hD-KFp"/>
+                        <outlet property="buttonWebsiteLink" destination="MqS-xc-6vG" id="ksr-UL-0qe"/>
+                        <outlet property="passwordInput" destination="dxf-Oc-Vfd" id="Ngs-st-a4V"/>
+                        <outlet property="pwOutput" destination="DA8-4A-RRN" id="VBu-Ra-GdN"/>
+                        <outlet property="serviceInput" destination="BIM-iS-zoU" id="Qz9-3L-x7V"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="138.98050974512745"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="appIcon-60" width="60" height="60"/>
+    </resources>
+</document>
