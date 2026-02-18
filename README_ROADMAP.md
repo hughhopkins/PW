@@ -47,3 +47,14 @@ This is the definitive spec for the V2 password derivation. Once shipped, this i
 - First hex digit: `f` = 15 → special char: `.`
 - Final output (40 chars): `FfD.07fCb7c1869AcA60d9d31D3C58bEaFc82D01`
 - First 15 chars: `FfD.07fCb7c1869`
+
+[x] Add macOS V2 with support for SHA256 hashing:
+    - Same as iOS V2.
+
+[x] Add website V2 with support for SHA256 hashing:
+    - V1/V2 version toggle with localStorage persistence
+    - SHA256 implementation (self-contained, no external deps)
+    - V2 algorithm: SHA256 + uppercase even indices + special char injection + truncate to 40
+    - Emoji visual cue (3 emoji derived from hash tail)
+    - Copy and Copy 15 buttons with feedback
+    - Updated about page with V1 and V2 algorithm descriptions
