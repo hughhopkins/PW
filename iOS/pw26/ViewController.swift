@@ -230,22 +230,40 @@ class ViewController: UIViewController {
     // buttons
     @IBAction func copyNormal(_ sender: Any) {
         UIPasteboard.general.string = normalPWToBeCopiedToClipboard
+        animateCopy(button: buttonCopyNormal, originalTitle: "  Copy PW  ")
     }
 
     @IBAction func copy15CharYes(_ sender: Any) {
         shorterPW = pwOutput.text!
         shorterPWCopy = String(shorterPW.prefix(15))
         UIPasteboard.general.string = shorterPWCopy
+        animateCopy(button: buttonCopy15CharYes, originalTitle: "  Copy 15 Character PW  ")
     }
 
     @IBAction func copySpecialChar(_ sender: Any) {
         specialCharPW = pwOutput.text!
         specialCharPWCopy = "\(specialCharPW)" + "*"
+        animateCopy(button: buttonCopySpecialChar, originalTitle: "  Copy PW with Special * Character  ")
+    }
+
+    private func animateCopy(button: UIButton, originalTitle: String) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        button.setTitle("  Copied ✓  ", for: .normal)
+        UIView.animate(withDuration: 0.1, animations: {
+            button.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+        }, completion: { _ in
+            UIView.animate(withDuration: 0.1) {
+                button.transform = .identity
+            }
+        })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            button.setTitle(originalTitle, for: .normal)
+        }
     }
 
     @IBAction func websiteLink(_ sender: Any) {
-        if let url = URL(string: "http://pwapp.io/?utm_source=iOS&utm_medium=link&utm_content=footer&utm_campaign=iOS") {
-            UIApplication.shared.openURL(url)
+        if let url = URL(string: "https://pwapp.io/?utm_source=iOS&utm_medium=link&utm_content=footer&utm_campaign=iOS") {
+            UIApplication.shared.open(url)
         }
     }
 
