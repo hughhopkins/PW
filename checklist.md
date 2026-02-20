@@ -3,8 +3,8 @@
 ## Pre-submission
 
 ### Code
-- [ ] All three platforms (iOS, macOS, web) produce identical V1 and V2 outputs
-- [ ] Emoji cues match across all platforms
+- [x] All three platforms (iOS, macOS, web) produce identical V1 and V2 outputs
+- [x] Emoji cues match across all platforms
 - [ ] Copy and Copy 15 work correctly
 - [ ] Version toggle persists across app relaunch
 - [ ] V1 output unchanged from previous release (no regression)
