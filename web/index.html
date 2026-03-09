@@ -36,6 +36,9 @@
   <style>
     .version-toggle {
       margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
     }
     .version-toggle button {
       margin-right: 6px;
@@ -53,6 +56,8 @@
       font-size: 24px;
       margin-left: 10px;
       vertical-align: middle;
+      white-space: nowrap;
+      display: inline-block;
     }
     .copy-buttons {
       margin-top: 8px;
@@ -78,9 +83,15 @@
       opacity: 1;
     }
     .shortcut-hint {
-      font-size: 11px;
-      color: #999;
-      margin-left: 4px;
+      font-size: 10px;
+      color: #666;
+      margin-left: 5px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 1px 4px;
+      white-space: nowrap;
+      vertical-align: middle;
     }
     .title-row {
       display: flex;
@@ -95,8 +106,19 @@
     .title-row h1 {
       margin-bottom: 0;
     }
+    .password-output {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      overflow: visible;
+    }
     #password {
+      font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 30px;
       word-break: break-all;
+      line-height: 1.35;
+      cursor: pointer;
     }
     .footer img {
       display: inline-block;
@@ -118,8 +140,11 @@
         padding: 10px 18px;
         font-size: 15px;
       }
-      .shortcut-hint {
-        display: none;
+      #password {
+        font-size: 20px;
+      }
+      .password-output {
+        height: 65px;
       }
       .footer a img {
         display: block;
@@ -147,9 +172,9 @@
         </div>
         <input type="text" id="srv" placeholder="Service" class="big">
         <input type="password" id="pw" placeholder="Password" class="big">
-        <h4><p><span id="password"></span></p></h4>
-        <div class="copy-buttons" id="copyButtons" style="display:none;">
-          <button onclick="copyFull()">Copy</button>
+        <div class="password-output"><span id="password"></span></div>
+        <div class="copy-buttons" id="copyButtons" style="visibility:hidden;">
+          <button onclick="copyFull()">Copy <span class="shortcut-hint">⌘C</span></button>
           <button onclick="copy15()">Copy 15 <span class="shortcut-hint">⇧⌘C</span></button>
           <span id="copyFeedback" class="copy-feedback">Copied!</span>
         </div>
@@ -366,7 +391,7 @@
       if (!service && !pass) {
         password.innerText = '';
         emojiCueEl.innerText = '';
-        copyButtons.style.display = 'none';
+        copyButtons.style.visibility = 'hidden';
         currentOutput = '';
         return;
       }
@@ -380,7 +405,7 @@
       }
 
       password.innerText = currentOutput;
-      copyButtons.style.display = '';
+      copyButtons.style.visibility = 'visible';
     };
 
     srv.onkeyup = update;
@@ -402,6 +427,13 @@
       } else if (e.key === 'C' && e.shiftKey) {
         e.preventDefault();
         if (currentOutput) copy15();
+      } else if (e.key === 'c' && !e.shiftKey) {
+        var active = document.activeElement;
+        var isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+        if (!isInput && currentOutput) {
+          e.preventDefault();
+          copyFull();
+        }
       }
     });
 

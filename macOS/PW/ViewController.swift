@@ -20,10 +20,12 @@ class ViewController: NSViewController {
     private var gradientView: NSView?
     private var autoCopyCheckbox: NSButton!
     private var copy15Button: NSButton!
+    private var copyFullButton: NSButton!
 
     private var lastCopiedResult: String = ""
     private var actualPassword: String = ""
     private var isUpdatingPassword: Bool = false
+    private var copy15Override: Bool = false
 
     var currentVersion: PWVersion {
         get { return PWVersion(rawValue: UserDefaults.standard.integer(forKey: "pwVersion")) ?? .v1 }
@@ -60,6 +62,7 @@ class ViewController: NSViewController {
         setupEmojiLabel()
         setupGradientView()
         setupCopy15Button()
+        setupCopyFullButton()
         setupAutoCopyCheckbox()
         applyVersionAppearance()
 
@@ -174,6 +177,20 @@ class ViewController: NSViewController {
         copy15Button = btn
     }
 
+    private func setupCopyFullButton() {
+        let btn = NSButton(title: "Copy Full PW", target: self, action: #selector(copyFullClicked))
+        btn.bezelStyle = .rounded
+        btn.frame = NSRect(x: 148, y: 8, width: 148, height: 24)
+        btn.autoresizingMask = [.minYMargin]
+        view.addSubview(btn)
+        copyFullButton = btn
+        updateCopyFullButtonVisibility()
+    }
+
+    private func updateCopyFullButtonVisibility() {
+        copyFullButton.isHidden = autoCopyEnabled && !copy15Override
+    }
+
     private func setupAutoCopyCheckbox() {
         let cb = NSButton(checkboxWithTitle: "Auto-copy", target: self, action: #selector(autoCopyToggled))
         cb.state = autoCopyEnabled ? .on : .off
@@ -201,6 +218,23 @@ class ViewController: NSViewController {
 
     @objc private func autoCopyToggled() {
         autoCopyEnabled = autoCopyCheckbox.state == .on
+        updateCopyFullButtonVisibility()
+    }
+
+    @objc private func copyFullClicked() {
+        let output = pwOutput.stringValue
+        guard !output.isEmpty else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(output, forType: .string)
+        lastCopiedResult = output
+        copy15Override = false
+        updateCopyFullButtonVisibility()
+
+        copyFullButton.highlight(true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            self?.copyFullButton.highlight(false)
+        }
     }
 
     @objc private func copy15Clicked() {
@@ -214,6 +248,9 @@ class ViewController: NSViewController {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(short, forType: .string)
+
+        copy15Override = true
+        updateCopyFullButtonVisibility()
 
         // Flash the button to show the shortcut worked
         copy15Button.highlight(true)
@@ -229,6 +266,8 @@ class ViewController: NSViewController {
         // Only copy if the result changed (avoid clearing clipboard repeatedly)
         guard text != lastCopiedResult else { return }
         lastCopiedResult = text
+        copy15Override = false
+        updateCopyFullButtonVisibility()
 
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
