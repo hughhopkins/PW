@@ -47,6 +47,7 @@ class ViewController: NSViewController {
         // Mask the password field with bullet characters
         actualPassword = ""
         passwordInput.delegate = self
+        serviceInput.delegate = self
 
         // Disable text services to prevent ViewBridge errors
         for field in [serviceInput!, passwordInput!] {
@@ -321,6 +322,12 @@ class ViewController: NSViewController {
 // MARK: - Password Masking
 
 extension ViewController: NSTextFieldDelegate {
+
+    override func controlTextDidEndEditing(_ obj: Notification) {
+        // When a field loses focus (e.g. Tab pressed), reset lastCopiedResult
+        // so autoUpdate re-copies the password to the clipboard
+        lastCopiedResult = ""
+    }
 
     override func controlTextDidChange(_ obj: Notification) {
         guard let field = obj.object as? NSTextField, field === passwordInput else { return }
