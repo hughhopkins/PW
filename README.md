@@ -60,4 +60,3 @@ PW/
 
 ## Credits
 - Based on https://github.com/simontabor/pw and outputs the same passwords.
-- Big up to https://github.com/krzyzanowskim/CryptoSwift for hashing.

@@ -10,27 +10,79 @@ import XCTest
 @testable import PW
 
 class PWTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    // MARK: - V1 Tests
+
+    func testV1_facebookHackference() {
+        let result = PWHasher.hashV1(service: "facebook", password: "hackference")
+        XCTAssertEqual(result, "762b679fA17b10D6Cc2d2194542d2235738b3e33")
+        XCTAssertEqual(result.count, 40)
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testV1_emptyInputs() {
+        let result = PWHasher.hashV1(service: "", password: "")
+        XCTAssertEqual(result.count, 40)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    // MARK: - V2 Tests
+
+    func testV2_facebookHackference_fullOutput() {
+        let result = PWHasher.hashV2(service: "facebook", password: "hackference")
+        XCTAssertEqual(result, "FfD.07fCb7c1869AcA60d9d31D3C58bEaFc82D01")
+        XCTAssertEqual(result.count, 40)
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testV2_facebookHackference_first15() {
+        let result = PWHasher.hashV2(service: "facebook", password: "hackference")
+        let first15 = String(result.prefix(15))
+        XCTAssertEqual(first15, "FfD.07fCb7c1869")
     }
-    
+
+    func testV2_specialCharAtPosition3() {
+        let result = PWHasher.hashV2(service: "facebook", password: "hackference")
+        let charAtPos3 = result[result.index(result.startIndex, offsetBy: 3)]
+        let specialChars = "!@#$%^&*()-_=+~."
+        XCTAssertTrue(specialChars.contains(charAtPos3), "Character at position 3 should be a special character, got: \(charAtPos3)")
+    }
+
+    func testV2_first15_containsRequiredCharTypes() {
+        let result = PWHasher.hashV2(service: "facebook", password: "hackference")
+        let first15 = String(result.prefix(15))
+
+        let hasUpper = first15.contains(where: { $0.isUppercase })
+        let hasLower = first15.contains(where: { $0.isLowercase })
+        let hasDigit = first15.contains(where: { $0.isNumber })
+        let hasSpecial = first15.contains(where: { "!@#$%^&*()-_=+~.".contains($0) })
+
+        XCTAssertTrue(hasUpper, "First 15 chars should contain uppercase")
+        XCTAssertTrue(hasLower, "First 15 chars should contain lowercase")
+        XCTAssertTrue(hasDigit, "First 15 chars should contain digit")
+        XCTAssertTrue(hasSpecial, "First 15 chars should contain special char")
+    }
+
+    // MARK: - Emoji Tests
+
+    func testEmojiCue_returns3Emoji() {
+        let emoji = PWHasher.emojiCue(service: "facebook", password: "hackference")
+        XCTAssertEqual(emoji.count, 3, "Emoji cue should be exactly 3 emoji")
+    }
+
+    func testEmojiCue_deterministic() {
+        let emoji1 = PWHasher.emojiCue(service: "facebook", password: "hackference")
+        let emoji2 = PWHasher.emojiCue(service: "facebook", password: "hackference")
+        XCTAssertEqual(emoji1, emoji2)
+    }
+
+    // MARK: - Cross-platform consistency
+
+    func testV1_matchesIOS() {
+        // Same test vector as iOS - ensures both platforms produce identical output
+        let result = PWHasher.hashV1(service: "facebook", password: "hackference")
+        XCTAssertEqual(result, "762b679fA17b10D6Cc2d2194542d2235738b3e33")
+    }
+
+    func testV2_matchesIOS() {
+        let result = PWHasher.hashV2(service: "facebook", password: "hackference")
+        XCTAssertEqual(result, "FfD.07fCb7c1869AcA60d9d31D3C58bEaFc82D01")
+    }
 }

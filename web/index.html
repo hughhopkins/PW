@@ -33,28 +33,160 @@
   <link rel="apple-touch-icon" sizes="120x120" href="images/touch-icon-iphone-retina.png">
   <link rel="apple-touch-icon" sizes="152x152" href="images/touch-icon-ipad-retina.png">
 
+  <style>
+    .version-toggle {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .version-toggle button {
+      margin-right: 6px;
+      background: #fff;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 11px;
+    }
+    .version-toggle button.active {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+    .emoji-cue {
+      font-size: 24px;
+      margin-left: 10px;
+      vertical-align: middle;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .copy-buttons {
+      margin-top: 8px;
+    }
+    .copy-buttons button {
+      margin-right: 6px;
+      background: #fff;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 11px;
+    }
+    .copy-buttons button:hover {
+      background: #eee;
+    }
+    .copy-feedback {
+      font-size: 13px;
+      color: #2ecc40;
+      margin-left: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .copy-feedback.show {
+      opacity: 1;
+    }
+    .shortcut-hint {
+      font-size: 10px;
+      color: #666;
+      margin-left: 5px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 1px 4px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title-row img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+    }
+    .title-row h1 {
+      margin-bottom: 0;
+    }
+    .password-output {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      overflow: visible;
+    }
+    #password {
+      font-family: 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 30px;
+      word-break: break-all;
+      line-height: 1.35;
+      cursor: pointer;
+    }
+    .footer img {
+      display: inline-block;
+      margin: 4px 0;
+    }
+    input.big {
+      font-size: 16px;
+    }
+    @media (max-width: 550px) {
+      .one-half.column {
+        width: 100%;
+        margin-top: 40px !important;
+      }
+      .version-toggle button {
+        padding: 10px 22px;
+        font-size: 16px;
+      }
+      .copy-buttons button {
+        padding: 10px 18px;
+        font-size: 15px;
+      }
+      #password {
+        font-size: 20px;
+      }
+      .password-output {
+        height: 65px;
+      }
+      .footer a img {
+        display: block;
+        margin: 8px 0;
+      }
+    }
+  </style>
+
 </head>
 
 <body id="dropbox">
   <div class="container">
     <div class="row">
       <div class="one-half column" style="margin-top: 25%">
-        <h1>PW</h1>
+        <div class="title-row">
+          <img src="images/app-icon.png" alt="PW">
+          <h1>PW</h1>
+        </div>
         <p><i>Forget your passwords.</i></p>
+        <div class="version-toggle">
+          <button id="btnV1" onclick="setVersion(1)">V1</button>
+          <button id="btnV2" onclick="setVersion(2)">V2</button>
+          <span class="shortcut-hint">⌘1 / ⌘2</span>
+          <span id="emojiCue" class="emoji-cue"></span>
+        </div>
         <input type="text" id="srv" placeholder="Service" class="big">
         <input type="password" id="pw" placeholder="Password" class="big">
-        <h4><p><span id="password"></span></p></h4>
+        <div class="password-output"><span id="password"></span></div>
+        <div class="copy-buttons" id="copyButtons" style="visibility:hidden;">
+          <button onclick="copyFull()">Copy <span class="shortcut-hint">⌘C</span></button>
+          <button onclick="copy15()">Copy 15 <span class="shortcut-hint">⇧⌘C</span></button>
+          <span id="copyFeedback" class="copy-feedback">Copied!</span>
+        </div>
       </div>
     </div>
     <footer class="footer">
-      <p><a href="/about.html">About</a>  <a href="https://github.com/hughhopkins/PW-Site">Open Source</a></p>
+      <p><a href="/about.html">About</a>  <a href="https://github.com/hughhopkins/PW">Open Source</a></p>
       <p>
 
       <a href="https://itunes.apple.com/app/apple-store/id981716752?pt=117760826&ct=website-pwapp.io&mt=8" target="_blank"><img src="images/Download_on_the_App_Store_Badge_US-UK_135x40.svg"/></a>
 
       <a href="https://itunes.apple.com/gb/app/pw/id1052922320?mt=12" target="_blank"><img src="images/Download_on_the_Mac_App_Store_Badge_US-UK_165x40.svg"/></a>
-
-      <a href="https://play.google.com/store/apps/details?id=io.pwapp.pw19&utm_source=global_co&utm_medium=prtnr&utm_content=Mar2515&utm_campaign=PartBadge&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1" target="_blank"><img class="logoGooglePlay" alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" /></a>
     </p>
     </footer>
   </div>
@@ -66,6 +198,152 @@
     var sha1 = node ?
       function(d) { return require('crypto').createHash('sha1').update(d).digest('hex'); } :
       function(d){for(var j=0,a=0,c=[],k=[1732584193,4023233417,2562383102,271733878,3285377520],e,g,h,l,f,i=unescape(encodeURI(d)),b=i.length;a<=b;)c[a>>2]|=(i.charCodeAt(a)||128)<<8*(3-a++%4);for(c[d=(b>>6<<4)+15]=b<<3;j<=d;j+=16){b=k;for(a=0;80>a;b=[[(f=((i=b[0])<<5|i>>>27)+b[4]+(c[a]=16>a?~~c[j+a]:f<<1|f>>>31)+1518500249)+((e=b[1])&(g=b[2])|~e&(h=b[3])),l=f+(e^g^h)+341275144,f+(e&g|e&h|g&h)+882459459,l+1535694389][0|a++/20]|0,i,e<<30|e>>>2,g,h])f=c[a-3]^c[a-8]^c[a-14]^c[a-16];for(a=5;a;)k[--a]=k[a]+b[a]|0}for(d="";40>a;)d+=(k[a>>3]>>4*(7-a++%8)&15).toString(16);return d};
+
+    // SHA256 implementation - self-contained, no external deps
+    var sha256 = node ?
+      function(d) { return require('crypto').createHash('sha256').update(d).digest('hex'); } :
+      function(msg) {
+        var K = [
+          0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+          0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+          0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+          0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+          0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+          0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+          0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+          0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+        ];
+
+        function rr(x, n) { return (x >>> n) | (x << (32 - n)); }
+
+        var bytes = unescape(encodeURI(msg));
+        var len = bytes.length;
+        var words = [];
+        for (var i = 0; i <= len; i++) {
+          words[i >> 2] |= (i < len ? bytes.charCodeAt(i) : 0x80) << (24 - (i % 4) * 8);
+        }
+        var bitLen = len * 8;
+        var totalBlocks = (((len + 8) >> 6) + 1) << 4;
+        words[totalBlocks - 1] = bitLen;
+
+        var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+
+        for (var j = 0; j < totalBlocks; j += 16) {
+          var W = [];
+          var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+
+          for (var t = 0; t < 64; t++) {
+            if (t < 16) {
+              W[t] = words[j + t] | 0;
+            } else {
+              var s0 = rr(W[t-15], 7) ^ rr(W[t-15], 18) ^ (W[t-15] >>> 3);
+              var s1 = rr(W[t-2], 17) ^ rr(W[t-2], 19) ^ (W[t-2] >>> 10);
+              W[t] = (W[t-16] + s0 + W[t-7] + s1) | 0;
+            }
+
+            var S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
+            var ch = (e & f) ^ (~e & g);
+            var temp1 = (h + S1 + ch + K[t] + W[t]) | 0;
+            var S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
+            var maj = (a & b) ^ (a & c) ^ (b & c);
+            var temp2 = (S0 + maj) | 0;
+
+            h = g; g = f; f = e; e = (d + temp1) | 0;
+            d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+          }
+
+          H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0;
+          H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+          H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0;
+          H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+        }
+
+        var hex = '';
+        for (var i = 0; i < 8; i++) {
+          for (var s = 28; s >= 0; s -= 4) {
+            hex += ((H[i] >> s) & 0xf).toString(16);
+          }
+        }
+        return hex;
+      };
+
+    var specialChars = '!@#$%^&*()-_=+~.';
+
+    var emojiSet = [
+      '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼',
+      '🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔',
+      '🌸','🌺','🌻','🌹','🌷','🌵','🌲','🌴',
+      '🍎','🍊','🍋','🍇','🍉','🍓','🍒','🍑',
+      '🍕','🍔','🍟','🌮','🍿','🍩','🍪','🎂',
+      '⚽','🏀','🎾','🏈','🎯','🎮','🎲','🎸',
+      '🚗','🚀','✈️','🚂','⛵','🏠','🏔️','🌈',
+      '⭐','🌙','☀️','🔥','💧','❄️','🎵','💎'
+    ];
+
+    function uppercaseEvenIndices(hex) {
+      var result = '';
+      for (var i = 0; i < hex.length; i++) {
+        result += (i % 2 === 0) ? hex[i].toUpperCase() : hex[i];
+      }
+      return result;
+    }
+
+    function hexDigitValue(ch) {
+      return parseInt(ch.toLowerCase(), 16) || 0;
+    }
+
+    function hashV1(service, password) {
+      var input = service + '||' + password + '||';
+      var hex = sha1(input);
+      return uppercaseEvenIndices(hex);
+    }
+
+    function hashV2(service, password) {
+      var input = service + '||' + password + '||';
+      var hex = sha256(input);
+      var cased = uppercaseEvenIndices(hex);
+
+      var firstChar = cased[0];
+      var hexVal = hexDigitValue(firstChar);
+      var special = specialChars[hexVal];
+
+      var result = cased.slice(0, 3) + special + cased.slice(3);
+      return result.slice(0, 40);
+    }
+
+    function emojiCue(service, password) {
+      var input = service + '||' + password + '||';
+      var hex = sha256(input);
+      var tail = hex.slice(-6);
+      var emojis = '';
+      for (var i = 0; i < 6; i += 2) {
+        var pair = tail.slice(i, i + 2);
+        var value = parseInt(pair, 16);
+        emojis += emojiSet[value % emojiSet.length];
+      }
+      return emojis;
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    }
+
+    function showCopyFeedback() {
+      var fb = document.getElementById('copyFeedback');
+      fb.classList.add('show');
+      setTimeout(function() { fb.classList.remove('show'); }, 1200);
+    }
 
     function selectText(el) {
       if (document.selection) {
@@ -79,29 +357,55 @@
       }
     }
 
-    var exec = node ? require('child_process').exec : function(){};
+    var currentVersion = parseInt(localStorage.getItem('pw_version')) || 2;
 
     var srv = document.getElementById('srv');
     var pw = document.getElementById('pw');
     var password = document.getElementById('password');
-    var key = document.getElementById('key');
-    
-    var fileKey = '';
+    var emojiCueEl = document.getElementById('emojiCue');
+    var copyButtons = document.getElementById('copyButtons');
+    var currentOutput = '';
+
+    function setVersion(v) {
+      currentVersion = v;
+      localStorage.setItem('pw_version', v);
+      document.getElementById('btnV1').className = (v === 1) ? 'active' : '';
+      document.getElementById('btnV2').className = (v === 2) ? 'active' : '';
+      update();
+    }
+
+    function copyFull() {
+      copyToClipboard(currentOutput);
+      showCopyFeedback();
+    }
+
+    function copy15() {
+      copyToClipboard(currentOutput.slice(0, 15));
+      showCopyFeedback();
+    }
 
     var update = function() {
       var service = srv.value.toLowerCase().replace(/ /g, '');
       var pass = pw.value;
 
-      var word = sha1(service + '||' + pass + '||' + fileKey);
+      if (!service && !pass) {
+        password.innerText = '';
+        emojiCueEl.innerText = '';
+        copyButtons.style.visibility = 'hidden';
+        currentOutput = '';
+        return;
+      }
 
-      // so we have some uppercase letters, replace even index chars with uppercase
-      word = word.replace(/[A-z]/g, function(c, i) {
-        return i % 2 === 0 ?
-          c.toUpperCase() :
-          c;
-      });
+      if (currentVersion === 2) {
+        currentOutput = hashV2(service, pass);
+        emojiCueEl.innerText = emojiCue(service, pass);
+      } else {
+        currentOutput = hashV1(service, pass);
+        emojiCueEl.innerText = '';
+      }
 
-      password.innerText = word;
+      password.innerText = currentOutput;
+      copyButtons.style.visibility = 'visible';
     };
 
     srv.onkeyup = update;
@@ -110,6 +414,31 @@
     password.onclick = function(e) {
       selectText(password);
     }
+
+    // Keyboard shortcuts: Cmd/Ctrl+1 = V1, Cmd/Ctrl+2 = V2, Cmd/Ctrl+Shift+C = Copy 15
+    document.addEventListener('keydown', function(e) {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key === '1') {
+        e.preventDefault();
+        setVersion(1);
+      } else if (e.key === '2') {
+        e.preventDefault();
+        setVersion(2);
+      } else if (e.key === 'C' && e.shiftKey) {
+        e.preventDefault();
+        if (currentOutput) copy15();
+      } else if (e.key === 'c' && !e.shiftKey) {
+        var active = document.activeElement;
+        var isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+        if (!isInput && currentOutput) {
+          e.preventDefault();
+          copyFull();
+        }
+      }
+    });
+
+    // Initialize version toggle state
+    setVersion(currentVersion);
   </script>
 
 </body>
