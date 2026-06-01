@@ -408,8 +408,8 @@
       copyButtons.style.visibility = 'visible';
     };
 
-    srv.onkeyup = update;
-    pw.onkeyup = update;
+    srv.addEventListener('input', update);
+    pw.addEventListener('input', update);
 
     password.onclick = function(e) {
       selectText(password);

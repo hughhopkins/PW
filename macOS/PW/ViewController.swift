@@ -23,8 +23,6 @@ class ViewController: NSViewController {
     private var copyFullButton: NSButton!
 
     private var lastCopiedResult: String = ""
-    private var actualPassword: String = ""
-    private var isUpdatingPassword: Bool = false
     private var copy15Override: Bool = false
 
     var currentVersion: PWVersion {
@@ -44,8 +42,6 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Mask the password field with bullet characters
-        actualPassword = ""
         passwordInput.delegate = self
         serviceInput.delegate = self
 
@@ -297,7 +293,7 @@ class ViewController: NSViewController {
 
     func autoUpdate() {
         let srv = serviceInput.stringValue
-        let pass = actualPassword
+        let pass = passwordInput.stringValue
 
         if srv.isEmpty && pass.isEmpty {
             pwOutput.stringValue = ""
@@ -319,7 +315,7 @@ class ViewController: NSViewController {
     }
 }
 
-// MARK: - Password Masking
+// MARK: - Text Field Delegate
 
 extension ViewController: NSTextFieldDelegate {
 
@@ -327,44 +323,5 @@ extension ViewController: NSTextFieldDelegate {
         // When a field loses focus (e.g. Tab pressed), reset lastCopiedResult
         // so autoUpdate re-copies the password to the clipboard
         lastCopiedResult = ""
-    }
-
-    override func controlTextDidChange(_ obj: Notification) {
-        guard let field = obj.object as? NSTextField, field === passwordInput else { return }
-        guard !isUpdatingPassword else { return }
-
-        isUpdatingPassword = true
-
-        let displayed = field.stringValue
-        let bulletCount = actualPassword.count
-
-        if displayed.count > bulletCount {
-            // Characters were added - find the new chars (they won't be bullets)
-            let newChars = displayed.filter { $0 != "•" }
-            // Figure out insertion point by finding where the non-bullet chars are
-            var newPassword = ""
-            var oldIdx = actualPassword.startIndex
-            for char in displayed {
-                if char == "•" && oldIdx < actualPassword.endIndex {
-                    newPassword.append(actualPassword[oldIdx])
-                    oldIdx = actualPassword.index(after: oldIdx)
-                } else if char != "•" {
-                    newPassword.append(char)
-                }
-            }
-            actualPassword = newPassword
-        } else if displayed.count < bulletCount {
-            // Characters were deleted
-            let diff = bulletCount - displayed.count
-            // Assume deletion from the end (most common) or wherever cursor is
-            // For simplicity, handle based on remaining bullet count
-            actualPassword = String(actualPassword.prefix(displayed.count))
-        }
-        // else count is same - replacement, just keep actualPassword
-
-        // Replace display with bullets
-        field.stringValue = String(repeating: "•", count: actualPassword.count)
-
-        isUpdatingPassword = false
     }
 }

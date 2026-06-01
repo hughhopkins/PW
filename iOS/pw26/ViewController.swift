@@ -39,6 +39,11 @@ class ViewController: UIViewController {
         // little touches
         serviceInput.autocorrectionType = UITextAutocorrectionType.no
         serviceInput.autocapitalizationType = UITextAutocapitalizationType.none
+        serviceInput.spellCheckingType = UITextSpellCheckingType.no
+        passwordInput.autocorrectionType = UITextAutocorrectionType.no
+        passwordInput.autocapitalizationType = UITextAutocapitalizationType.none
+        passwordInput.spellCheckingType = UITextSpellCheckingType.no
+        passwordInput.isSecureTextEntry = true
 
         buttonCopyNormal.layer.cornerRadius = 5
         buttonCopy15CharYes.layer.cornerRadius = 5
