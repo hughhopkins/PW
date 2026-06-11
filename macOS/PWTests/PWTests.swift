@@ -73,6 +73,26 @@ class PWTests: XCTestCase {
         XCTAssertEqual(emoji1, emoji2)
     }
 
+    // MARK: - Service normalization (locked spec: lowercased, spaces removed)
+
+    func testV1_serviceSpacesStripped() {
+        let spaced = PWHasher.hashV1(service: "face book", password: "hackference")
+        XCTAssertEqual(spaced, "762b679fA17b10D6Cc2d2194542d2235738b3e33",
+                       "Spaces in service must be stripped to match web and the original pw")
+    }
+
+    func testV2_serviceSpacesStripped() {
+        let spaced = PWHasher.hashV2(service: "FACE BOOK", password: "hackference")
+        let plain = PWHasher.hashV2(service: "facebook", password: "hackference")
+        XCTAssertEqual(spaced, plain)
+    }
+
+    func testEmojiCue_serviceSpacesStripped() {
+        let spaced = PWHasher.emojiCue(service: "face book", password: "hackference")
+        let plain = PWHasher.emojiCue(service: "facebook", password: "hackference")
+        XCTAssertEqual(spaced, plain, "Emoji cue must use the same normalized service as the hash")
+    }
+
     // MARK: - Cross-platform consistency
 
     func testV1_matchesIOS() {

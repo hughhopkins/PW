@@ -353,11 +353,15 @@
       } else if (window.getSelection) {
         var range = document.createRange();
         range.selectNode(el);
-        window.getSelection().addRange(range);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
       }
     }
 
-    var currentVersion = parseInt(localStorage.getItem('pw_version')) || 2;
+    // No stored preference defaults to V1, matching the iOS/macOS apps —
+    // legacy V1 users are the largest cohort without a stored preference.
+    var currentVersion = parseInt(localStorage.getItem('pw_version')) || 1;
 
     var srv = document.getElementById('srv');
     var pw = document.getElementById('pw');

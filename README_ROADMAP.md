@@ -35,7 +35,7 @@ This is the definitive spec for the V2 password derivation. Once shipped, this i
 
 ### Emoji visual cue
 - Derive 3 emoji from the hash bytes that are NOT part of the visible password
-- Use bytes 60-64 of the original hex string (before post-processing) as indices into a fixed emoji list
+- Use the last 6 characters (indices 58–63) of the original 64-character hex string (before post-processing), read as three 2-character pairs; each pair's value mod 64 indexes a fixed 64-emoji list. (Wording corrected 2026-06-11 to match what all three platforms shipped; the derivation itself is unchanged.)
 - Display the 3 emoji in the top-right corner of the output
 - The emoji set and derivation method are defined in code and must not change once shipped
 

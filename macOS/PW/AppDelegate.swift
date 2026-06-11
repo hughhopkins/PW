@@ -26,6 +26,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    // Single-window utility: without this, closing the window leaves the app
+    // running with no way to get the window back (and the update timer still
+    // polling the hidden fields).
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+
     @IBAction func menubarPWHelp(_ sender: Any) {
         if let url = URL(string: "http://pwapp.io/about.html?utm_source=OSX&utm_medium=link&utm_content=menubar-help&utm_campaign=OSX") {
             NSWorkspace.shared.open(url)
