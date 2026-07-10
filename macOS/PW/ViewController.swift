@@ -137,8 +137,9 @@ class ViewController: NSViewController {
                 self.versionSegment.selectedSegment = 1
                 self.versionChanged()
                 return nil
-            } else if chars == "C" && event.modifierFlags.contains(.shift) {
-                // Cmd+Shift+C = copy 15
+            } else if chars.uppercased() == "C" && event.modifierFlags.contains(.shift) {
+                // Cmd+Shift+C = copy 15 (case-insensitive so Caps Lock,
+                // which flips charactersIgnoringModifiers to "c", still works)
                 self.copy15()
                 return nil
             }
@@ -320,20 +321,23 @@ class ViewController: NSViewController {
         let srv = serviceInput.stringValue
         let pass = passwordInput.stringValue
 
+        // This runs from a 5Hz timer, so only touch the UI when values
+        // actually changed — unconditional writes redraw every tick.
         if srv.isEmpty && pass.isEmpty {
-            pwOutput.stringValue = ""
-            emojiLabel.stringValue = ""
+            if !pwOutput.stringValue.isEmpty { pwOutput.stringValue = "" }
+            if !emojiLabel.stringValue.isEmpty { emojiLabel.stringValue = "" }
             lastCopiedResult = ""
             return
         }
 
         let result = PWHasher.hash(service: srv, password: pass, version: currentVersion)
-        pwOutput.stringValue = result
+        if pwOutput.stringValue != result {
+            pwOutput.stringValue = result
+        }
 
-        if currentVersion == .v2 {
-            emojiLabel.stringValue = PWHasher.emojiCue(service: srv, password: pass)
-        } else {
-            emojiLabel.stringValue = ""
+        let emoji = currentVersion == .v2 ? PWHasher.emojiCue(service: srv, password: pass) : ""
+        if emojiLabel.stringValue != emoji {
+            emojiLabel.stringValue = emoji
         }
 
         copyFullToClipboard(result)

@@ -19,6 +19,8 @@
 
   <!-- Mobile Specific Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Opt out of browser auto-darkening; the page is light-only -->
+  <meta name="color-scheme" content="only light">
 
   <!-- FONT -->
 
@@ -29,6 +31,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="images/favicon.png">
 
+  <style>
+    /* Explicit canvas: light-only page, must not inherit a dark canvas */
+    html, body { background-color: #fff; }
+  </style>
 </head>
 
 <body id="dropbox">
@@ -46,6 +52,7 @@
         </ol>
         <h2>Versions</h2>
         <p>PW supports two hashing versions. You can switch between them using the V1/V2 toggle.</p>
+        <p>In both versions the service name is lowercased and spaces are removed before hashing ("Face Book" becomes "facebook"). The password is used exactly as typed.</p>
         <h3>V1 (SHA1)</h3>
         <p>The original version. PW takes the two inputs and runs them through a SHA1 hash:</p>
         <p>SHA1("service" + "||" + "password" + "||")</p>

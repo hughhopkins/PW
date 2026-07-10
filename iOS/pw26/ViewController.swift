@@ -231,10 +231,6 @@ class ViewController: UIViewController {
         }
     }
 
-    func pwRefresh() {
-        pwNew = ""
-    }
-
     // buttons
 
     // All password copies are local-only so Universal Clipboard doesn't sync

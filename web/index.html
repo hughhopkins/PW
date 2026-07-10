@@ -19,6 +19,9 @@
 
   <!-- Mobile Specific Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Opt out of browser auto-darkening (e.g. Chrome on Android): the page is
+       light-only and forced inversion makes the password output unreadable -->
+  <meta name="color-scheme" content="only light">
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/normalize.css">
@@ -34,6 +37,11 @@
   <link rel="apple-touch-icon" sizes="152x152" href="images/touch-icon-ipad-retina.png">
 
   <style>
+    /* Explicit canvas: the page is light-only and must not inherit a dark
+       canvas from the browser/webview (text is #222). */
+    html, body {
+      background-color: #fff;
+    }
     .version-toggle {
       margin-bottom: 15px;
       display: flex;
@@ -167,11 +175,11 @@
         <div class="version-toggle">
           <button id="btnV1" onclick="setVersion(1)">V1</button>
           <button id="btnV2" onclick="setVersion(2)">V2</button>
-          <span class="shortcut-hint">⌘1 / ⌘2</span>
+          <span class="shortcut-hint">1 / 2</span>
           <span id="emojiCue" class="emoji-cue"></span>
         </div>
-        <input type="text" id="srv" placeholder="Service" class="big">
-        <input type="password" id="pw" placeholder="Password" class="big">
+        <input type="text" id="srv" placeholder="Service" class="big" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <input type="password" id="pw" placeholder="Password" class="big" autocomplete="off">
         <div class="password-output"><span id="password"></span></div>
         <div class="copy-buttons" id="copyButtons" style="visibility:hidden;">
           <button onclick="copyFull()">Copy <span class="shortcut-hint">⌘C</span></button>
@@ -419,9 +427,25 @@
       selectText(password);
     }
 
-    // Keyboard shortcuts: Cmd/Ctrl+1 = V1, Cmd/Ctrl+2 = V2, Cmd/Ctrl+Shift+C = Copy 15
+    // Keyboard shortcuts: 1 = V1, 2 = V2 (when not typing in a field),
+    // Cmd/Ctrl+Shift+C = Copy 15, Cmd/Ctrl+C = Copy (when nothing is selected).
+    // Bare keys switch versions because browsers reserve Cmd/Ctrl+1/2 for tab
+    // switching and never deliver them to the page; the Cmd/Ctrl variants are
+    // kept below for browsers that do pass them through.
     document.addEventListener('keydown', function(e) {
-      if (!(e.metaKey || e.ctrlKey)) return;
+      var active = document.activeElement;
+      var isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+      if (!(e.metaKey || e.ctrlKey)) {
+        if (!isInput && e.key === '1') {
+          e.preventDefault();
+          setVersion(1);
+        } else if (!isInput && e.key === '2') {
+          e.preventDefault();
+          setVersion(2);
+        }
+        return;
+      }
       if (e.key === '1') {
         e.preventDefault();
         setVersion(1);
@@ -432,9 +456,9 @@
         e.preventDefault();
         if (currentOutput) copy15();
       } else if (e.key === 'c' && !e.shiftKey) {
-        var active = document.activeElement;
-        var isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
-        if (!isInput && currentOutput) {
+        // Don't hijack Cmd+C when the user is copying their own selection
+        var hasSelection = window.getSelection && window.getSelection().toString();
+        if (!isInput && !hasSelection && currentOutput) {
           e.preventDefault();
           copyFull();
         }
