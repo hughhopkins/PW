@@ -26,20 +26,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    // Single-window utility: without this, closing the window leaves the app
+    // running with no way to get the window back (and the update timer still
+    // polling the hidden fields).
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+
     @IBAction func menubarPWHelp(_ sender: Any) {
-        if let url = URL(string: "http://pwapp.io/about.html?utm_source=OSX&utm_medium=link&utm_content=menubar-help&utm_campaign=OSX") {
+        if let url = URL(string: "https://pwapp.io/about.html?utm_source=OSX&utm_medium=link&utm_content=menubar-help&utm_campaign=OSX") {
             NSWorkspace.shared.open(url)
         }
     }
 
     @IBAction func menubarPWSite(_ sender: Any) {
-        if let url = URL(string: "http://pwapp.io/?utm_source=OSX&utm_medium=link&utm_content=menubar-site&utm_campaign=OSX") {
+        if let url = URL(string: "https://pwapp.io/?utm_source=OSX&utm_medium=link&utm_content=menubar-site&utm_campaign=OSX") {
             NSWorkspace.shared.open(url)
         }
     }
 
     @IBAction func menubarGitHub(_ sender: Any) {
-        if let url = URL(string: "https://github.com/hughhopkins/PW-OSX?utm_source=OSX&utm_medium=link&utm_content=menubar-site&utm_campaign=OSX") {
+        // V2 lives in the monorepo; PW-OSX is the retired V1-only repo
+        if let url = URL(string: "https://github.com/hughhopkins/PW?utm_source=OSX&utm_medium=link&utm_content=menubar-site&utm_campaign=OSX") {
             NSWorkspace.shared.open(url)
         }
     }

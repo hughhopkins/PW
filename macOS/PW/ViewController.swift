@@ -24,6 +24,9 @@ class ViewController: NSViewController {
 
     private var lastCopiedResult: String = ""
     private var copy15Override: Bool = false
+    private var updateTimer: Timer?
+    private var keyMonitor: Any?
+    private var hasSetInitialFocus = false
 
     var currentVersion: PWVersion {
         get { return PWVersion(rawValue: UserDefaults.standard.integer(forKey: "pwVersion")) ?? .v1 }
@@ -45,13 +48,16 @@ class ViewController: NSViewController {
         passwordInput.delegate = self
         serviceInput.delegate = self
 
-        // Disable text services to prevent ViewBridge errors
+        // Disable text services on the inputs. contentType stays nil — the
+        // documented "no content type" value (rawValue "" is invalid) — and
+        // deliberately not .password/.username, so the system isn't invited
+        // to save or autofill these fields.
         for field in [serviceInput!, passwordInput!] {
             if #available(macOS 10.12.2, *) {
                 field.isAutomaticTextCompletionEnabled = false
             }
             if #available(macOS 11.0, *) {
-                field.contentType = NSTextContentType(rawValue: "")
+                field.contentType = nil
             }
         }
 
@@ -63,8 +69,15 @@ class ViewController: NSViewController {
         setupAutoCopyCheckbox()
         applyVersionAppearance()
 
-        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
             self?.autoUpdate()
+        }
+    }
+
+    deinit {
+        updateTimer?.invalidate()
+        if let keyMonitor = keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
         }
     }
 
@@ -76,7 +89,12 @@ class ViewController: NSViewController {
 
     override func viewDidAppear() {
         super.viewDidAppear()
-        view.window?.makeFirstResponder(serviceInput)
+        // Focus the service field on first appearance only — doing it on
+        // every appearance yanks the cursor back after de-miniaturizing.
+        if !hasSetInitialFocus {
+            hasSetInitialFocus = true
+            view.window?.makeFirstResponder(serviceInput)
+        }
     }
 
     // MARK: - UI Setup
@@ -108,7 +126,7 @@ class ViewController: NSViewController {
         view.addSubview(seg)
         versionSegment = seg
 
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self, event.modifierFlags.contains(.command) else { return event }
             let chars = event.charactersIgnoringModifiers ?? ""
             if chars == "1" {
@@ -119,8 +137,9 @@ class ViewController: NSViewController {
                 self.versionSegment.selectedSegment = 1
                 self.versionChanged()
                 return nil
-            } else if chars == "C" && event.modifierFlags.contains(.shift) {
-                // Cmd+Shift+C = copy 15
+            } else if chars.uppercased() == "C" && event.modifierFlags.contains(.shift) {
+                // Cmd+Shift+C = copy 15 (case-insensitive so Caps Lock,
+                // which flips charactersIgnoringModifiers to "c", still works)
                 self.copy15()
                 return nil
             }
@@ -218,12 +237,19 @@ class ViewController: NSViewController {
         updateCopyFullButtonVisibility()
     }
 
+    // All password copies go through here so clipboard managers skip them
+    // (org.nspasteboard.ConcealedType convention, see http://nspasteboard.org).
+    private func writePasswordToPasteboard(_ text: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        pasteboard.setString("", forType: NSPasteboard.PasteboardType("org.nspasteboard.ConcealedType"))
+    }
+
     @objc private func copyFullClicked() {
         let output = pwOutput.stringValue
         guard !output.isEmpty else { return }
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(output, forType: .string)
+        writePasswordToPasteboard(output)
         lastCopiedResult = output
         copy15Override = false
         updateCopyFullButtonVisibility()
@@ -242,10 +268,12 @@ class ViewController: NSViewController {
         let output = pwOutput.stringValue
         guard !output.isEmpty else { return }
         let short = String(output.prefix(15))
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(short, forType: .string)
+        writePasswordToPasteboard(short)
 
+        // Mark the current output as already handled so auto-copy doesn't
+        // immediately clobber the deliberate 15-char copy with the full
+        // password. Auto-copy takes over again once the output changes.
+        lastCopiedResult = output
         copy15Override = true
         updateCopyFullButtonVisibility()
 
@@ -266,9 +294,7 @@ class ViewController: NSViewController {
         copy15Override = false
         updateCopyFullButtonVisibility()
 
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        writePasswordToPasteboard(text)
     }
 
     // MARK: - Appearance
@@ -295,20 +321,23 @@ class ViewController: NSViewController {
         let srv = serviceInput.stringValue
         let pass = passwordInput.stringValue
 
+        // This runs from a 5Hz timer, so only touch the UI when values
+        // actually changed — unconditional writes redraw every tick.
         if srv.isEmpty && pass.isEmpty {
-            pwOutput.stringValue = ""
-            emojiLabel.stringValue = ""
+            if !pwOutput.stringValue.isEmpty { pwOutput.stringValue = "" }
+            if !emojiLabel.stringValue.isEmpty { emojiLabel.stringValue = "" }
             lastCopiedResult = ""
             return
         }
 
         let result = PWHasher.hash(service: srv, password: pass, version: currentVersion)
-        pwOutput.stringValue = result
+        if pwOutput.stringValue != result {
+            pwOutput.stringValue = result
+        }
 
-        if currentVersion == .v2 {
-            emojiLabel.stringValue = PWHasher.emojiCue(service: srv, password: pass)
-        } else {
-            emojiLabel.stringValue = ""
+        let emoji = currentVersion == .v2 ? PWHasher.emojiCue(service: srv, password: pass) : ""
+        if emojiLabel.stringValue != emoji {
+            emojiLabel.stringValue = emoji
         }
 
         copyFullToClipboard(result)
@@ -321,7 +350,10 @@ extension ViewController: NSTextFieldDelegate {
 
     override func controlTextDidEndEditing(_ obj: Notification) {
         // When a field loses focus (e.g. Tab pressed), reset lastCopiedResult
-        // so autoUpdate re-copies the password to the clipboard
+        // so autoUpdate re-copies the password to the clipboard — unless the
+        // user just clicked Copy 15, in which case re-copying would replace
+        // their deliberate 15-char copy with the full password.
+        guard !copy15Override else { return }
         lastCopiedResult = ""
     }
 }

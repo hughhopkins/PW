@@ -152,8 +152,11 @@
                             </secureTextField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6OE-AH-odJ">
                                 <rect key="frame" x="18" y="37" width="444" height="32"/>
+                                <!-- 16pt: at 18pt a digit/'d'-heavy 40-char output can exceed the
+                                     444px field and the clipping cell silently cuts characters off
+                                     both ends; at 16pt even the widest possible output fits. -->
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="Jgv-VL-NVZ">
-                                    <font key="font" metaFont="system" size="18"/>
+                                    <font key="font" metaFont="system" size="16"/>
                                     <color key="textColor" red="1" green="1" blue="1" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>

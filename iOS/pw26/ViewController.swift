@@ -44,6 +44,8 @@ class ViewController: UIViewController {
         passwordInput.autocapitalizationType = UITextAutocapitalizationType.none
         passwordInput.spellCheckingType = UITextSpellCheckingType.no
         passwordInput.isSecureTextEntry = true
+        serviceInput.delegate = self
+        passwordInput.delegate = self
 
         buttonCopyNormal.layer.cornerRadius = 5
         buttonCopy15CharYes.layer.cornerRadius = 5
@@ -150,6 +152,9 @@ class ViewController: UIViewController {
         gradientLayer?.frame = view.bounds
     }
 
+    // Satisfies UITextFieldDelegate (conformance declared at the bottom of
+    // this file); the delegate is set in viewDidLoad so Return dismisses the
+    // keyboard.
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true;
@@ -178,9 +183,7 @@ class ViewController: UIViewController {
 
     // PW code
     var pwNew: String = ""
-    var shorterPW: String = ""
     var shorterPWCopy: String = ""
-    var specialCharPW: String = ""
     var specialCharPWCopy: String = ""
 
     // to do clean all of this up
@@ -228,26 +231,33 @@ class ViewController: UIViewController {
         }
     }
 
-    func pwRefresh() {
-        pwNew = ""
+    // buttons
+
+    // All password copies are local-only so Universal Clipboard doesn't sync
+    // generated passwords to nearby devices.
+    private func copyPasswordToPasteboard(_ text: String) {
+        UIPasteboard.general.setItems(
+            [["public.utf8-plain-text": text]],
+            options: [.localOnly: true]
+        )
     }
 
-    // buttons
     @IBAction func copyNormal(_ sender: Any) {
-        UIPasteboard.general.string = normalPWToBeCopiedToClipboard
+        copyPasswordToPasteboard(normalPWToBeCopiedToClipboard)
         animateCopy(button: buttonCopyNormal, originalTitle: "  Copy PW  ")
     }
 
     @IBAction func copy15CharYes(_ sender: Any) {
-        shorterPW = pwOutput.text!
-        shorterPWCopy = String(shorterPW.prefix(15))
-        UIPasteboard.general.string = shorterPWCopy
+        // Copy from the raw password, not pwOutput.text — the V1 display
+        // string can carry formatting ("xxx  yyy", "xxx (*)").
+        shorterPWCopy = String(normalPWToBeCopiedToClipboard.prefix(15))
+        copyPasswordToPasteboard(shorterPWCopy)
         animateCopy(button: buttonCopy15CharYes, originalTitle: "  Copy 15 Character PW  ")
     }
 
     @IBAction func copySpecialChar(_ sender: Any) {
-        specialCharPW = pwOutput.text!
-        specialCharPWCopy = "\(specialCharPW)" + "*"
+        specialCharPWCopy = normalPWToBeCopiedToClipboard + "*"
+        copyPasswordToPasteboard(specialCharPWCopy)
         animateCopy(button: buttonCopySpecialChar, originalTitle: "  Copy PW with Special * Character  ")
     }
 
@@ -288,11 +298,15 @@ class ViewController: UIViewController {
             buttonCopySpecialChar.isHidden = true
         } else if sitesThatPraticeBadSecruity.contains(serviceInput.text!.lowercased()) {
             // V1: when it should show the 15 character option
+            pwOutput.isHidden = false
             buttonCopyNormal.isHidden = false
             buttonCopy15CharYes.isHidden = false
+            buttonCopySpecialChar.isHidden = true
         } else if sitesThatPraticeBetterSecruity.contains(serviceInput.text!.lowercased()) {
             // V1: when it should be a special character
+            pwOutput.isHidden = false
             buttonCopyNormal.isHidden = false
+            buttonCopy15CharYes.isHidden = true
             buttonCopySpecialChar.isHidden = false
         } else {
             // V1: normal
@@ -315,3 +329,5 @@ class ViewController: UIViewController {
 
 // end
 }
+
+extension ViewController: UITextFieldDelegate {}

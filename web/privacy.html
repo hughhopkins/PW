@@ -17,6 +17,8 @@
 
   <!-- Mobile Specific Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Opt out of browser auto-darkening; the page is light-only -->
+  <meta name="color-scheme" content="only light">
 
   <!-- CSS -->
   <link rel="stylesheet" href="css/normalize.css">
@@ -25,6 +27,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="images/favicon.png">
 
+  <style>
+    /* Explicit canvas: light-only page, must not inherit a dark canvas */
+    html, body { background-color: #fff; }
+  </style>
 </head>
 
 <body>

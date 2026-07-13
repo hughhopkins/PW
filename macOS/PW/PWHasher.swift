@@ -39,13 +39,13 @@ struct PWHasher {
     }
 
     static func hashV1(service: String, password: String) -> String {
-        let input = "\(service.lowercased())||\(password)||"
+        let input = "\(normalize(service))||\(password)||"
         let hex = sha1(input)
         return uppercaseEvenIndices(hex)
     }
 
     static func hashV2(service: String, password: String) -> String {
-        let input = "\(service.lowercased())||\(password)||"
+        let input = "\(normalize(service))||\(password)||"
         let hex = sha256(input)
         let cased = uppercaseEvenIndices(hex)
 
@@ -61,7 +61,7 @@ struct PWHasher {
     }
 
     static func emojiCue(service: String, password: String) -> String {
-        let input = "\(service.lowercased())||\(password)||"
+        let input = "\(normalize(service))||\(password)||"
         let hex = sha256(input)
         // Use last 6 hex chars (indices 58-63) as 3 pairs
         let startIdx = hex.index(hex.endIndex, offsetBy: -6)
@@ -80,6 +80,13 @@ struct PWHasher {
     }
 
     // MARK: - Private helpers
+
+    // Per the locked spec (README_ROADMAP.md): service is lowercased with all
+    // spaces removed. The web app and the original simontabor/pw do the same;
+    // hashing a spaced service without stripping breaks cross-platform output.
+    private static func normalize(_ service: String) -> String {
+        return service.lowercased().replacingOccurrences(of: " ", with: "")
+    }
 
     private static func sha1(_ string: String) -> String {
         let data = Data(string.utf8)
