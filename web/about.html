@@ -69,7 +69,7 @@
         </ol>
         <p>Same example (service "facebook", password "hackference"):</p>
         <p><code>FfD.07fCb7c1869AcA60d9d31D3C58bEaFc82D01</code></p>
-        <p>The first 15 characters are guaranteed to contain uppercase, lowercase, a digit, and a special character — satisfying most password policies.</p>
+        <p>The injected special character improves compatibility with password policies; the remaining characters are derived deterministically from the SHA256 hash.</p>
         <p>V2 also shows a 3-emoji visual cue to help you quickly verify your output is correct.</p>
         <h2>Open Source</h2>
         <p>All of the PW code is open source under the MIT Licence.</p>

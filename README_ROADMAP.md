@@ -5,7 +5,7 @@ This is a human and AI generated file to capture the roadmap of the project. In 
 [x] Add iOS V2 with support for SHA256 hashing:
     - v2 will have a tab at the top of the screen to switch between V1 and V2. It will remember the last used version.
     - v2 will have the same buttons to copy the password and the 15 character password.
-    - V2 will use SHA256 hashing. It will make sure to use special characters, numbers and uppercase letters within the first 15 characters in order to satisfy the minimum requirements of many services.
+    - V2 will use SHA256 hashing and inject a special character near the start of the output to improve compatibility with password policies.
     - In order to help users recognize the V2 password we will create a new text output that is three emojis in the top right corner. This is just a visual cue to help them remember if the output is correct instead of having to remember the hash.
     - V1 will retain the purple gradient background. V2 will have a new background color that is a dark blue.
 
@@ -26,12 +26,12 @@ This is the definitive spec for the V2 password derivation. Once shipped, this i
     a. **Uppercase** - same as V1: uppercase every character at an even index (0, 2, 4, ...)
     b. **Special character injection** - take the numeric value of the first hex digit (0-15) and map it to a special character from this fixed set of 16: `!@#$%^&*()-_=+~.`. Inject this character at position 3 (0-indexed) of the output, shifting subsequent characters right.
     c. **Truncate** to 40 characters (same length as V1 - easier to type manually when needed).
-    d. **The first 15 characters are now guaranteed to contain**: at least one uppercase letter, at least one lowercase letter, at least one digit, and one special character.
+    d. **Policy compatibility** - the first 15 characters contain the injected special character; the remaining characters are deterministically derived from the transformed SHA256 hex output, so other character classes are not guaranteed.
 4. Output: 40 characters
 
 ### Copy behaviour
 - "Copy" button: copies the full 40-character output
-- "Copy 15" button: copies the first 15 characters only (guaranteed to satisfy most password policies)
+- "Copy 15" button: copies the first 15 characters only (including the injected special character for improved policy compatibility)
 
 ### Emoji visual cue
 - Derive 3 emoji from the hash bytes that are NOT part of the visible password

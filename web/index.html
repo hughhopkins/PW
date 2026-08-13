@@ -202,10 +202,137 @@
   <script>
     var node = typeof require !== 'undefined';
 
-    // use native node crypto if available, else https://github.com/jbt/js-crypto/blob/master/sha1-min.js
+    // Use native Node crypto when available. The browser fallback implements
+    // canonical SHA-1 over UTF-8 bytes so V1 matches the iOS and macOS apps at
+    // every message length, including inputs that span multiple SHA-1 blocks.
     var sha1 = node ?
       function(d) { return require('crypto').createHash('sha1').update(d).digest('hex'); } :
-      function(d){for(var j=0,a=0,c=[],k=[1732584193,4023233417,2562383102,271733878,3285377520],e,g,h,l,f,i=unescape(encodeURI(d)),b=i.length;a<=b;)c[a>>2]|=(i.charCodeAt(a)||128)<<8*(3-a++%4);for(c[d=(b>>6<<4)+15]=b<<3;j<=d;j+=16){b=k;for(a=0;80>a;b=[[(f=((i=b[0])<<5|i>>>27)+b[4]+(c[a]=16>a?~~c[j+a]:f<<1|f>>>31)+1518500249)+((e=b[1])&(g=b[2])|~e&(h=b[3])),l=f+(e^g^h)+341275144,f+(e&g|e&h|g&h)+882459459,l+1535694389][0|a++/20]|0,i,e<<30|e>>>2,g,h])f=c[a-3]^c[a-8]^c[a-14]^c[a-16];for(a=5;a;)k[--a]=k[a]+b[a]|0}for(d="";40>a;)d+=(k[a>>3]>>4*(7-a++%8)&15).toString(16);return d};
+      function(message) {
+        var bytes = [];
+
+        // Encode as UTF-8, replacing unmatched UTF-16 surrogates in the same
+        // way as TextEncoder and Swift's String UTF-8 view.
+        for (var i = 0; i < message.length; i++) {
+          var code = message.charCodeAt(i);
+          if (code < 0x80) {
+            bytes.push(code);
+          } else if (code < 0x800) {
+            bytes.push(0xc0 | (code >>> 6), 0x80 | (code & 0x3f));
+          } else if (code >= 0xd800 && code <= 0xdbff) {
+            var next = message.charCodeAt(i + 1);
+            if (next >= 0xdc00 && next <= 0xdfff) {
+              var point = 0x10000 + ((code - 0xd800) << 10) + (next - 0xdc00);
+              bytes.push(
+                0xf0 | (point >>> 18),
+                0x80 | ((point >>> 12) & 0x3f),
+                0x80 | ((point >>> 6) & 0x3f),
+                0x80 | (point & 0x3f)
+              );
+              i++;
+            } else {
+              bytes.push(0xef, 0xbf, 0xbd);
+            }
+          } else if (code >= 0xdc00 && code <= 0xdfff) {
+            bytes.push(0xef, 0xbf, 0xbd);
+          } else {
+            bytes.push(
+              0xe0 | (code >>> 12),
+              0x80 | ((code >>> 6) & 0x3f),
+              0x80 | (code & 0x3f)
+            );
+          }
+        }
+
+        var byteLength = bytes.length;
+        var bitLengthHigh = Math.floor(byteLength / 0x20000000) >>> 0;
+        var bitLengthLow = (byteLength * 8) >>> 0;
+
+        bytes.push(0x80);
+        while ((bytes.length % 64) !== 56) bytes.push(0);
+        bytes.push(
+          (bitLengthHigh >>> 24) & 0xff,
+          (bitLengthHigh >>> 16) & 0xff,
+          (bitLengthHigh >>> 8) & 0xff,
+          bitLengthHigh & 0xff,
+          (bitLengthLow >>> 24) & 0xff,
+          (bitLengthLow >>> 16) & 0xff,
+          (bitLengthLow >>> 8) & 0xff,
+          bitLengthLow & 0xff
+        );
+
+        function rotateLeft(value, amount) {
+          return (value << amount) | (value >>> (32 - amount));
+        }
+
+        var h0 = 0x67452301;
+        var h1 = 0xefcdab89;
+        var h2 = 0x98badcfe;
+        var h3 = 0x10325476;
+        var h4 = 0xc3d2e1f0;
+
+        for (var offset = 0; offset < bytes.length; offset += 64) {
+          var words = new Array(80);
+          for (var wordIndex = 0; wordIndex < 16; wordIndex++) {
+            var byteIndex = offset + wordIndex * 4;
+            words[wordIndex] = (
+              (bytes[byteIndex] << 24) |
+              (bytes[byteIndex + 1] << 16) |
+              (bytes[byteIndex + 2] << 8) |
+              bytes[byteIndex + 3]
+            );
+          }
+          for (var scheduleIndex = 16; scheduleIndex < 80; scheduleIndex++) {
+            words[scheduleIndex] = rotateLeft(
+              words[scheduleIndex - 3] ^
+              words[scheduleIndex - 8] ^
+              words[scheduleIndex - 14] ^
+              words[scheduleIndex - 16],
+              1
+            );
+          }
+
+          var a = h0;
+          var b = h1;
+          var c = h2;
+          var d = h3;
+          var e = h4;
+
+          for (var round = 0; round < 80; round++) {
+            var f;
+            var k;
+            if (round < 20) {
+              f = (b & c) | ((~b) & d);
+              k = 0x5a827999;
+            } else if (round < 40) {
+              f = b ^ c ^ d;
+              k = 0x6ed9eba1;
+            } else if (round < 60) {
+              f = (b & c) | (b & d) | (c & d);
+              k = 0x8f1bbcdc;
+            } else {
+              f = b ^ c ^ d;
+              k = 0xca62c1d6;
+            }
+
+            var temp = (rotateLeft(a, 5) + f + e + k + words[round]) | 0;
+            e = d;
+            d = c;
+            c = rotateLeft(b, 30);
+            b = a;
+            a = temp;
+          }
+
+          h0 = (h0 + a) | 0;
+          h1 = (h1 + b) | 0;
+          h2 = (h2 + c) | 0;
+          h3 = (h3 + d) | 0;
+          h4 = (h4 + e) | 0;
+        }
+
+        return [h0, h1, h2, h3, h4].map(function(value) {
+          return ('00000000' + (value >>> 0).toString(16)).slice(-8);
+        }).join('');
+      };
 
     // SHA256 implementation - self-contained, no external deps
     var sha256 = node ?
