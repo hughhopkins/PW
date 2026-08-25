@@ -213,7 +213,7 @@ class ViewController: NSViewController {
     private func setupCopy15Button() {
         let btn = NSButton(title: "Copy 15  ⇧⌘C", target: self, action: #selector(copy15Clicked))
         btn.bezelStyle = .rounded
-        btn.frame = NSRect(x: 310, y: 8, width: 150, height: 24)
+        btn.frame = NSRect(x: 332, y: 8, width: 128, height: 24)
         btn.autoresizingMask = [.minYMargin]
         view.addSubview(btn)
         copy15Button = btn
@@ -222,7 +222,7 @@ class ViewController: NSViewController {
     private func setupCopyFullButton() {
         let btn = NSButton(title: "Copy Full PW", target: self, action: #selector(copyFullClicked))
         btn.bezelStyle = .rounded
-        btn.frame = NSRect(x: 148, y: 8, width: 148, height: 24)
+        btn.frame = NSRect(x: 216, y: 8, width: 112, height: 24)
         btn.autoresizingMask = [.minYMargin]
         view.addSubview(btn)
         copyFullButton = btn
@@ -236,7 +236,7 @@ class ViewController: NSViewController {
     private func setupAutoCopyCheckbox() {
         let cb = NSButton(checkboxWithTitle: "Auto-copy", target: self, action: #selector(autoCopyToggled))
         cb.state = autoCopyEnabled ? .on : .off
-        cb.frame = NSRect(x: 18, y: 8, width: 120, height: 20)
+        cb.frame = NSRect(x: 18, y: 10, width: 78, height: 20)
         cb.autoresizingMask = [.minYMargin]
         // Style for visibility on colored backgrounds
         if let cell = cb.cell as? NSButtonCell {
@@ -254,7 +254,7 @@ class ViewController: NSViewController {
         let title = "Hide ¾ of output"
         let cb = NSButton(checkboxWithTitle: title, target: self, action: #selector(hidePasswordOutputToggled))
         cb.state = hidePasswordOutputEnabled ? .on : .off
-        cb.frame = NSRect(x: 18, y: 76, width: 150, height: 20)
+        cb.frame = NSRect(x: 100, y: 10, width: 112, height: 20)
         cb.autoresizingMask = [.minYMargin]
         cb.toolTip = "Show the first quarter of the generated password and mask the rest"
         // Style for visibility on both the original and V2 backgrounds.
