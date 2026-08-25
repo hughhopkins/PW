@@ -28,9 +28,16 @@ class pw26UITests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // Use recording to get started writing UI tests.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testHidePasswordOutputToggleChangesStateAndRestoresIt() {
+        let toggle = XCUIApplication().buttons["hidePasswordOutputButton"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2))
+
+        let wasSelected = toggle.isSelected
+        toggle.tap()
+        XCTAssertEqual(toggle.isSelected, !wasSelected)
+
+        toggle.tap()
+        XCTAssertEqual(toggle.isSelected, wasSelected)
     }
     
 }

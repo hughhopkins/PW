@@ -122,28 +122,43 @@ class ViewController: UIViewController {
     private func setupHidePasswordOutputButton() {
         hidePasswordOutputButton.translatesAutoresizingMaskIntoConstraints = false
         hidePasswordOutputButton.contentHorizontalAlignment = .leading
-        hidePasswordOutputButton.titleLabel?.font = UIFont.systemFont(ofSize: 15)
-        hidePasswordOutputButton.tintColor = .systemBlue
-        hidePasswordOutputButton.backgroundColor = .clear
+        hidePasswordOutputButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 20)
+        hidePasswordOutputButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: -8)
+        hidePasswordOutputButton.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        hidePasswordOutputButton.tintColor = .white
+        hidePasswordOutputButton.layer.cornerRadius = 8
+        hidePasswordOutputButton.layer.borderWidth = 1
         hidePasswordOutputButton.setTitleColor(.white, for: .normal)
-        hidePasswordOutputButton.setTitle("  Hide ¾ of output", for: .normal)
+        hidePasswordOutputButton.setTitle("Hide password output", for: .normal)
         hidePasswordOutputButton.addTarget(self, action: #selector(hidePasswordOutputToggled), for: .touchUpInside)
-        hidePasswordOutputButton.accessibilityLabel = "Hide three quarters of password output"
+        hidePasswordOutputButton.accessibilityLabel = "Hide password output"
+        hidePasswordOutputButton.accessibilityHint = "Masks the last three quarters of the generated password on screen"
+        hidePasswordOutputButton.accessibilityIdentifier = "hidePasswordOutputButton"
         view.addSubview(hidePasswordOutputButton)
 
         NSLayoutConstraint.activate([
             hidePasswordOutputButton.topAnchor.constraint(equalTo: passwordInput.bottomAnchor, constant: 7),
             hidePasswordOutputButton.leadingAnchor.constraint(equalTo: passwordInput.leadingAnchor),
-            hidePasswordOutputButton.widthAnchor.constraint(equalToConstant: 180),
-            hidePasswordOutputButton.heightAnchor.constraint(equalToConstant: 30)
+            hidePasswordOutputButton.widthAnchor.constraint(equalToConstant: 220),
+            hidePasswordOutputButton.heightAnchor.constraint(equalToConstant: 44)
         ])
 
         updateHidePasswordOutputButtonAppearance()
     }
 
     private func updateHidePasswordOutputButtonAppearance() {
-        let imageName = hidePasswordOutputEnabled ? "checkmark.square.fill" : "square"
+        let imageName = hidePasswordOutputEnabled ? "eye.slash.fill" : "eye"
         hidePasswordOutputButton.setImage(UIImage(systemName: imageName), for: .normal)
+        hidePasswordOutputButton.isSelected = hidePasswordOutputEnabled
+        hidePasswordOutputButton.backgroundColor = hidePasswordOutputEnabled
+            ? UIColor.systemBlue.withAlphaComponent(0.85)
+            : UIColor.white.withAlphaComponent(0.12)
+        hidePasswordOutputButton.layer.borderColor = (hidePasswordOutputEnabled
+            ? UIColor.systemBlue
+            : UIColor.white.withAlphaComponent(0.35)).cgColor
+        hidePasswordOutputButton.accessibilityTraits = hidePasswordOutputEnabled
+            ? [.button, .selected]
+            : [.button]
         hidePasswordOutputButton.accessibilityValue = hidePasswordOutputEnabled ? "On" : "Off"
     }
 
