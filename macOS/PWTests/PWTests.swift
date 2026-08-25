@@ -11,6 +11,20 @@ import XCTest
 
 class PWTests: XCTestCase {
 
+    // MARK: - Password output privacy
+
+    func testPartiallyMaskedOutput_hidesLastThreeQuarters() {
+        let password = "0123456789abcdefghijklmnopqrstuvwxyzABCD"
+        let displayed = PasswordOutputDisplay.partiallyMasked(password)
+
+        XCTAssertEqual(displayed, "0123456789" + String(repeating: "•", count: 30))
+        XCTAssertEqual(displayed.count, password.count)
+    }
+
+    func testPartiallyMaskedOutput_emptyPasswordStaysEmpty() {
+        XCTAssertEqual(PasswordOutputDisplay.partiallyMasked(""), "")
+    }
+
     // MARK: - V1 Tests
 
     func testV1_facebookHackference() {
