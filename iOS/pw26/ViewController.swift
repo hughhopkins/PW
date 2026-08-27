@@ -8,19 +8,6 @@
 
 import UIKit
 
-enum PasswordOutputDisplay {
-
-    /// Keeps the first quarter visible and masks the remaining three quarters.
-    /// PW outputs are 40 characters, so this displays 10 characters and masks 30.
-    static func partiallyMasked(_ password: String) -> String {
-        guard !password.isEmpty else { return "" }
-
-        let visibleCount = max(1, password.count / 4)
-        let hiddenCount = password.count - visibleCount
-        return String(password.prefix(visibleCount)) + String(repeating: "•", count: hiddenCount)
-    }
-}
-
 class ViewController: UIViewController {
 
     // V1 bad-security site lists (only used in V1 mode)
@@ -36,20 +23,11 @@ class ViewController: UIViewController {
     // Version switcher (programmatic)
     private let versionSegment = UISegmentedControl(items: ["V1", "V2"])
     private let emojiLabel = UILabel()
-    private let hidePasswordOutputButton = UIButton(type: .custom)
 
     // Persisted version preference
     var currentVersion: PWVersion {
         get { PWVersion(rawValue: UserDefaults.standard.integer(forKey: "pwVersion")) ?? .v1 }
         set { UserDefaults.standard.set(newValue.rawValue, forKey: "pwVersion") }
-    }
-
-    var hidePasswordOutputEnabled: Bool {
-        get {
-            if UserDefaults.standard.object(forKey: "hidePasswordOutput") == nil { return true }
-            return UserDefaults.standard.bool(forKey: "hidePasswordOutput")
-        }
-        set { UserDefaults.standard.set(newValue, forKey: "hidePasswordOutput") }
     }
 
     override func viewDidLoad() {
@@ -81,7 +59,6 @@ class ViewController: UIViewController {
 
         setupVersionSegment()
         setupEmojiLabel()
-        setupHidePasswordOutputButton()
         applyVersionAppearance(animated: false)
     }
 
@@ -117,55 +94,6 @@ class ViewController: UIViewController {
             emojiLabel.centerYAnchor.constraint(equalTo: versionSegment.centerYAnchor),
             emojiLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
         ])
-    }
-
-    private func setupHidePasswordOutputButton() {
-        hidePasswordOutputButton.translatesAutoresizingMaskIntoConstraints = false
-        hidePasswordOutputButton.contentHorizontalAlignment = .leading
-        hidePasswordOutputButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 20)
-        hidePasswordOutputButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: -8)
-        hidePasswordOutputButton.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        hidePasswordOutputButton.tintColor = .white
-        hidePasswordOutputButton.layer.cornerRadius = 8
-        hidePasswordOutputButton.layer.borderWidth = 1
-        hidePasswordOutputButton.setTitleColor(.white, for: .normal)
-        hidePasswordOutputButton.setTitle("Hide password output", for: .normal)
-        hidePasswordOutputButton.addTarget(self, action: #selector(hidePasswordOutputToggled), for: .touchUpInside)
-        hidePasswordOutputButton.accessibilityLabel = "Hide password output"
-        hidePasswordOutputButton.accessibilityHint = "Masks the last three quarters of the generated password on screen"
-        hidePasswordOutputButton.accessibilityIdentifier = "hidePasswordOutputButton"
-        view.addSubview(hidePasswordOutputButton)
-
-        NSLayoutConstraint.activate([
-            hidePasswordOutputButton.topAnchor.constraint(equalTo: passwordInput.bottomAnchor, constant: 7),
-            hidePasswordOutputButton.leadingAnchor.constraint(equalTo: passwordInput.leadingAnchor),
-            hidePasswordOutputButton.widthAnchor.constraint(equalToConstant: 220),
-            hidePasswordOutputButton.heightAnchor.constraint(equalToConstant: 44)
-        ])
-
-        updateHidePasswordOutputButtonAppearance()
-    }
-
-    private func updateHidePasswordOutputButtonAppearance() {
-        let imageName = hidePasswordOutputEnabled ? "eye.slash.fill" : "eye"
-        hidePasswordOutputButton.setImage(UIImage(systemName: imageName), for: .normal)
-        hidePasswordOutputButton.isSelected = hidePasswordOutputEnabled
-        hidePasswordOutputButton.backgroundColor = hidePasswordOutputEnabled
-            ? UIColor.systemBlue.withAlphaComponent(0.85)
-            : UIColor.white.withAlphaComponent(0.12)
-        hidePasswordOutputButton.layer.borderColor = (hidePasswordOutputEnabled
-            ? UIColor.systemBlue
-            : UIColor.white.withAlphaComponent(0.35)).cgColor
-        hidePasswordOutputButton.accessibilityTraits = hidePasswordOutputEnabled
-            ? [.button, .selected]
-            : [.button]
-        hidePasswordOutputButton.accessibilityValue = hidePasswordOutputEnabled ? "On" : "Off"
-    }
-
-    @objc private func hidePasswordOutputToggled() {
-        hidePasswordOutputEnabled.toggle()
-        updateHidePasswordOutputButtonAppearance()
-        updatePasswordOutputDisplay()
     }
 
     @objc private func versionChanged() {
@@ -273,9 +201,6 @@ class ViewController: UIViewController {
 
         if srv.isEmpty && pass.isEmpty {
             emojiLabel.text = ""
-            normalPWToBeCopiedToClipboard = ""
-            pwNew = ""
-            pwOutput.text = ""
             return
         }
 
@@ -287,7 +212,7 @@ class ViewController: UIViewController {
             pwTextFormatting()
             emojiLabel.text = ""
         } else {
-            updatePasswordOutputDisplay()
+            pwOutput.text = result
             emojiLabel.text = PWHasher.emojiCue(service: srv, password: pass)
         }
     }
@@ -295,34 +220,14 @@ class ViewController: UIViewController {
     func pwTextFormatting () {
         normalPWToBeCopiedToClipboard = pwNew
 
-        updatePasswordOutputDisplay()
-    }
-
-    private func updatePasswordOutputDisplay() {
-        let password = normalPWToBeCopiedToClipboard
-        guard !password.isEmpty else {
-            pwOutput.text = ""
-            return
-        }
-
-        if hidePasswordOutputEnabled {
-            pwOutput.text = PasswordOutputDisplay.partiallyMasked(password)
-            return
-        }
-
-        guard currentVersion == .v1 else {
-            pwOutput.text = password
-            return
-        }
-
-        shortershortPW = String(password.prefix(15))
-        restOfThePW = String(password.suffix(25))
+        shortershortPW = String(pwNew.prefix(15))
+        restOfThePW = String(pwNew.suffix(25))
         if sitesThatPraticeBadSecruity.contains(serviceInput.text!.lowercased()) {
             pwOutput.text = "\(shortershortPW)" + "  " + "\(restOfThePW)"
         } else if sitesThatPraticeBetterSecruity.contains(serviceInput.text!.lowercased()) {
-            pwOutput.text = "\(password)" + " (*)"
+            pwOutput.text = "\(pwNew)" + " (*)"
         } else {
-            pwOutput.text = password
+            pwOutput.text = pwNew
         }
     }
 
