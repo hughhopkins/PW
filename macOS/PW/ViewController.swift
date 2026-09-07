@@ -9,6 +9,19 @@
 import Cocoa
 import CommonCrypto
 
+enum PasswordOutputDisplay {
+
+    /// Keeps the first quarter visible and masks the remaining three quarters.
+    /// PW outputs are 40 characters, so this displays 10 characters and masks 30.
+    static func partiallyMasked(_ password: String) -> String {
+        guard !password.isEmpty else { return "" }
+
+        let visibleCount = max(1, password.count / 4)
+        let hiddenCount = password.count - visibleCount
+        return String(password.prefix(visibleCount)) + String(repeating: "•", count: hiddenCount)
+    }
+}
+
 class ViewController: NSViewController {
 
     @IBOutlet weak var pwOutput: NSTextField!
@@ -19,9 +32,11 @@ class ViewController: NSViewController {
     private var emojiLabel: NSTextField!
     private var gradientView: NSView?
     private var autoCopyCheckbox: NSButton!
+    private var hidePasswordOutputCheckbox: NSButton!
     private var copy15Button: NSButton!
     private var copyFullButton: NSButton!
 
+    private var generatedPassword: String = ""
     private var lastCopiedResult: String = ""
     private var copy15Override: Bool = false
     private var updateTimer: Timer?
@@ -40,6 +55,16 @@ class ViewController: NSViewController {
             return UserDefaults.standard.bool(forKey: "autoCopy")
         }
         set { UserDefaults.standard.set(newValue, forKey: "autoCopy") }
+    }
+
+    var hidePasswordOutputEnabled: Bool {
+        get {
+            // Screen-share-safe by default; the full value remains available
+            // through the copy actions and can be revealed with the checkbox.
+            if UserDefaults.standard.object(forKey: "hidePasswordOutput") == nil { return true }
+            return UserDefaults.standard.bool(forKey: "hidePasswordOutput")
+        }
+        set { UserDefaults.standard.set(newValue, forKey: "hidePasswordOutput") }
     }
 
     override func viewDidLoad() {
@@ -67,6 +92,7 @@ class ViewController: NSViewController {
         setupCopy15Button()
         setupCopyFullButton()
         setupAutoCopyCheckbox()
+        setupHidePasswordOutputCheckbox()
         applyVersionAppearance()
 
         updateTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
@@ -187,7 +213,7 @@ class ViewController: NSViewController {
     private func setupCopy15Button() {
         let btn = NSButton(title: "Copy 15  ⇧⌘C", target: self, action: #selector(copy15Clicked))
         btn.bezelStyle = .rounded
-        btn.frame = NSRect(x: 310, y: 8, width: 150, height: 24)
+        btn.frame = NSRect(x: 332, y: 8, width: 128, height: 24)
         btn.autoresizingMask = [.minYMargin]
         view.addSubview(btn)
         copy15Button = btn
@@ -196,7 +222,7 @@ class ViewController: NSViewController {
     private func setupCopyFullButton() {
         let btn = NSButton(title: "Copy Full PW", target: self, action: #selector(copyFullClicked))
         btn.bezelStyle = .rounded
-        btn.frame = NSRect(x: 148, y: 8, width: 148, height: 24)
+        btn.frame = NSRect(x: 216, y: 8, width: 112, height: 24)
         btn.autoresizingMask = [.minYMargin]
         view.addSubview(btn)
         copyFullButton = btn
@@ -210,7 +236,7 @@ class ViewController: NSViewController {
     private func setupAutoCopyCheckbox() {
         let cb = NSButton(checkboxWithTitle: "Auto-copy", target: self, action: #selector(autoCopyToggled))
         cb.state = autoCopyEnabled ? .on : .off
-        cb.frame = NSRect(x: 18, y: 8, width: 120, height: 20)
+        cb.frame = NSRect(x: 18, y: 10, width: 78, height: 20)
         cb.autoresizingMask = [.minYMargin]
         // Style for visibility on colored backgrounds
         if let cell = cb.cell as? NSButtonCell {
@@ -222,6 +248,25 @@ class ViewController: NSViewController {
         }
         view.addSubview(cb)
         autoCopyCheckbox = cb
+    }
+
+    private func setupHidePasswordOutputCheckbox() {
+        let title = "Hide ¾ of output"
+        let cb = NSButton(checkboxWithTitle: title, target: self, action: #selector(hidePasswordOutputToggled))
+        cb.state = hidePasswordOutputEnabled ? .on : .off
+        cb.frame = NSRect(x: 100, y: 10, width: 112, height: 20)
+        cb.autoresizingMask = [.minYMargin]
+        cb.toolTip = "Show the first quarter of the generated password and mask the rest"
+        // Style for visibility on both the original and V2 backgrounds.
+        if let cell = cb.cell as? NSButtonCell {
+            cell.attributedTitle = NSAttributedString(
+                string: title,
+                attributes: [.foregroundColor: NSColor.white.withAlphaComponent(0.8),
+                             .font: NSFont.systemFont(ofSize: 11)]
+            )
+        }
+        view.addSubview(cb)
+        hidePasswordOutputCheckbox = cb
     }
 
     // MARK: - Actions
@@ -237,6 +282,11 @@ class ViewController: NSViewController {
         updateCopyFullButtonVisibility()
     }
 
+    @objc private func hidePasswordOutputToggled() {
+        hidePasswordOutputEnabled = hidePasswordOutputCheckbox.state == .on
+        updatePasswordOutputDisplay()
+    }
+
     // All password copies go through here so clipboard managers skip them
     // (org.nspasteboard.ConcealedType convention, see http://nspasteboard.org).
     private func writePasswordToPasteboard(_ text: String) {
@@ -247,7 +297,7 @@ class ViewController: NSViewController {
     }
 
     @objc private func copyFullClicked() {
-        let output = pwOutput.stringValue
+        let output = generatedPassword
         guard !output.isEmpty else { return }
         writePasswordToPasteboard(output)
         lastCopiedResult = output
@@ -265,7 +315,7 @@ class ViewController: NSViewController {
     }
 
     private func copy15() {
-        let output = pwOutput.stringValue
+        let output = generatedPassword
         guard !output.isEmpty else { return }
         let short = String(output.prefix(15))
         writePasswordToPasteboard(short)
@@ -317,6 +367,15 @@ class ViewController: NSViewController {
 
     // MARK: - Password Generation
 
+    private func updatePasswordOutputDisplay() {
+        let displayedPassword = hidePasswordOutputEnabled
+            ? PasswordOutputDisplay.partiallyMasked(generatedPassword)
+            : generatedPassword
+        if pwOutput.stringValue != displayedPassword {
+            pwOutput.stringValue = displayedPassword
+        }
+    }
+
     func autoUpdate() {
         let srv = serviceInput.stringValue
         let pass = passwordInput.stringValue
@@ -324,16 +383,16 @@ class ViewController: NSViewController {
         // This runs from a 5Hz timer, so only touch the UI when values
         // actually changed — unconditional writes redraw every tick.
         if srv.isEmpty && pass.isEmpty {
-            if !pwOutput.stringValue.isEmpty { pwOutput.stringValue = "" }
+            generatedPassword = ""
+            updatePasswordOutputDisplay()
             if !emojiLabel.stringValue.isEmpty { emojiLabel.stringValue = "" }
             lastCopiedResult = ""
             return
         }
 
         let result = PWHasher.hash(service: srv, password: pass, version: currentVersion)
-        if pwOutput.stringValue != result {
-            pwOutput.stringValue = result
-        }
+        generatedPassword = result
+        updatePasswordOutputDisplay()
 
         let emoji = currentVersion == .v2 ? PWHasher.emojiCue(service: srv, password: pass) : ""
         if emojiLabel.stringValue != emoji {
